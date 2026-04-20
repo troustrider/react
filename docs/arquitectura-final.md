@@ -48,6 +48,8 @@ Las columnas se definen con `clave: keyof T`, que significa "cualquier nombre de
 
 El estado de edición usa `Partial<T> | null`. `Partial<T>` convierte todas las propiedades de T en opcionales, lo cual tiene sentido porque cuando el usuario está editando una fila, puede que aún no haya rellenado todos los campos. Sin `Partial`, TypeScript te obligaría a tener todas las propiedades definidas desde el primer momento, lo cual no es realista en un formulario.
 
+En la versión final del componente, `Partial<T>` tiene un papel real: el estado `editando` se va actualizando campo a campo mientras el usuario escribe en los inputs, y al guardar se aplica sobre la fila original con `{ ...fila, ...editando }`. En JS no habría forma de saber que `editando` es un objeto parcial de `Estudiante` — podrías meter cualquier propiedad inventada sin que nada se queje.
+
 ### import type
 
 Un detalle que tuve que resolver fue usar `import type { Estudiante }` en vez de `import { Estudiante }` en App.tsx. Esto es porque Vite en desarrollo sirve los archivos TypeScript directamente al navegador sin compilarlos del todo, y las interfaces/types no existen como valores en JavaScript. Con `import type`, le dices explícitamente a Vite que ese import es solo para tipos y que no busque un valor exportado en runtime.
@@ -55,6 +57,24 @@ Un detalle que tuve que resolver fue usar `import type { Estudiante }` en vez de
 ### Librería externa: date-fns
 
 Integré `date-fns` para calcular la diferencia en días entre dos fechas. La función `calcularDiferenciaDias` tiene tipos de entrada y salida explícitos (`Date, Date → number`). `date-fns` ya trae sus propios tipos incluidos, así que no necesité instalar un paquete `@types/` aparte.
+
+## Bonus: Ampliaciones del DataTable
+
+### Ordenación por columnas
+
+Añadí ordenación interactiva por columnas. Al hacer clic en una cabecera, la tabla se ordena por esa columna. Si haces clic otra vez en la misma, invierte el orden.
+
+La implementación requirió dos estados nuevos: `columnaOrden` (de tipo `keyof T | null`) para saber por qué columna se ordena, y `ascendente` (booleano) para la dirección. Antes de renderizar las filas, se hace una copia del array con `[...datos]` (para no mutar las props, que es un principio básico de React) y se ordena con `.sort()` comparando los valores de la columna seleccionada.
+
+Lo interesante a nivel de tipos es que `columnaOrden` es `keyof T | null`, así que TypeScript garantiza que solo puedes ordenar por propiedades que realmente existen en la entidad. Las cabeceras muestran una flecha (▲/▼) al lado de la columna activa para dar feedback visual.
+
+### Edición inline
+
+También implementé edición real de los datos. Al hacer clic en "Editar", las celdas de esa fila se convierten en inputs de texto donde puedes modificar los valores. "Guardar" aplica los cambios y "Cancelar" los descarta.
+
+Para esto los datos pasan a vivir en un estado local (`datosLocales`) en vez de usar directamente las props, porque en React las props son de solo lectura. La función `actualizarCampo` recibe `clave: keyof T` y el nuevo valor, y actualiza el estado `editando` campo a campo. Al guardar, se usa `.map()` sobre el array de datos para sustituir la fila editada manteniendo el resto intacto.
+
+El componente también acepta una prop opcional `onGuardar` (callback) para que el padre pueda reaccionar a los cambios si lo necesita — por ejemplo, para enviar los datos actualizados a un servidor.
 
 ## Comparación con JavaScript
 
