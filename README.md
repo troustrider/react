@@ -1,73 +1,46 @@
-# React + TypeScript + Vite
+# Laboratorio 3 — React con TypeScript
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Laboratorio práctico del bootcamp de Corner Estudios S.L. (Fase 4, Módulo 3). El objetivo es aplicar TypeScript estricto en un entorno React: componentes genéricos, hooks tipados, utility types y uso de librerías externas con tipos.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript (template `react-ts` de Vite)
+- date-fns para cálculo de fechas con tipos estrictos
+- Vite como bundler y servidor de desarrollo
 
-## React Compiler
+## Estructura
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+  App.tsx              → Componente raíz con datos de prueba
+  DataTable.tsx        → Componente genérico: tabla con edición inline y ordenación
+  models.ts            → Tipos del dominio (Estudiante, ColumnaTabla)
+  utils/
+    fecha-utils.ts     → Diferencia de días con date-fns
+docs/
+  arquitectura-final.md → Documentación de decisiones de diseño
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Cómo ejecutar
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
+
+Se abre en `http://localhost:5173/`.
+
+## Verificación de tipos
+
+```bash
+npx tsc -b --noEmit
+```
+
+Compila sin errores.
+
+## Funcionalidades del DataTable
+
+- **Genérico**: acepta cualquier tipo `T` con `id: string`. Las columnas usan `keyof T` para restringir las claves a propiedades reales de la entidad.
+- **Edición inline**: las celdas se convierten en inputs al editar. Estado temporal con `Partial<T>`.
+- **Ordenación por columnas**: clic en cabecera ordena, segundo clic invierte. Indicador visual ▲/▼.
+- **date-fns**: integración con tipos estrictos para calcular días entre fechas.
